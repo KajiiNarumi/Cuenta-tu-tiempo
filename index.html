@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Temporizador Minimalista</title>
+  <link rel="icon" type="image/png" href="fav.png">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000;
+      color: #1296BF;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #timer-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #timer {
+      font-size: 15vw;
+      text-align: center;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 20px;
+    }
+
+    button, input[type="text"] {
+      flex: 1 1 140px;
+      max-width: 180px;
+      padding: 14px;
+      font-size: 1.1em;
+      border-radius: 5px;
+      border: 1px solid #1296BF;
+      background: none;
+      color: #1296BF;
+      text-align: center;
+    }
+
+    button {
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    button:hover {
+      background-color: #1296BF;
+      color: #000;
+    }
+
+    input[type="text"]::placeholder {
+      color: #1296BF88;
+    }
+
+    @media (max-width: 500px) {
+      button, input[type="text"] {
+        flex: 1 1 100%;
+        max-width: 100%;
+      }
+
+      .controls {
+        gap: 8px;
+        padding: 8px 10px;
+      }
+    }
+
+    #info {
+      display: none;
+      text-align: center;
+      padding: 15px;
+      font-size: 0.9em;
+      color: #1296BF;
+    }
+  </style>
+</head>
+<body>
+  <div id="timer-container">
+    <div id="timer">00:00:00</div>
+  </div>
+
+  <!-- Fila 1: Play, Reset, Input, Definir -->
+  <div class="controls">
+    <button id="toggle">Iniciar</button>
+    <button id="reset">Reiniciar</button>
+    <input type="text" id="setTimeInput" placeholder="HH:MM:SS">
+    <button id="setTimeBtn">Definir</button>
+    <button id="infoBtn">?</button>
+  </div>
+
+  <!-- Fila 2: +1m, -1m, +10m, -10m -->
+  <div class="controls">
+    <button id="add1m">+1m</button>
+    <button id="sub1m">-1m</button>
+    <button id="add10m">+10m</button>
+    <button id="sub10m">-10m</button>
+  </div>
+
+  <!-- Información -->
+  <div id="info">
+    <p>
+      Usa los botones "Iniciar/Pausar" para iniciar o detener el temporizador, así como el botón "Reiniciar" para restaurar a 00:00:00.<br>
+      Puedes definir una duración en formato HH:MM:SS y presionar "Definir".<br>
+      Ajusta el tiempo con los botones +1m, -1m, +10m, -10m.<br>
+      <br>
+      Conserva el tiempo restante aunque se recargue la página<br>
+      <br>
+      Cuenta tu tiempo - Temporizador &copy; 2025 I. Antoine Suárez V. Todos los derechos reservados.<br>
+      Este programa está disponible bajo la <a href="https://www.gnu.org/licenses/gpl-3.0.html" style="color: #1296BF" target="_blank">Licencia Pública General GNU (GPL)</a> visita GitHub <a href="https://github.com/KajiiNarumi/Cuenta-tu-tiempo" style="color: #1296BF" target="_blank">Cuenta tu tiempo by I. A. Suárez V..
+    </p>
+  </div>
+
+  <script>
+    let duration = 0;
+    let remaining = 0;
+    let interval = null;
+    let isRunning = false;
+
+    const timerEl = document.getElementById('timer');
+    const toggleBtn = document.getElementById('toggle');
+    const resetBtn = document.getElementById('reset');
+    const add1mBtn = document.getElementById('add1m');
+    const add10mBtn = document.getElementById('add10m');
+    const sub1mBtn = document.getElementById('sub1m');
+    const sub10mBtn = document.getElementById('sub10m');
+    const setTimeInput = document.getElementById('setTimeInput');
+    const setTimeBtn = document.getElementById('setTimeBtn');
+    const infoBtn = document.getElementById('infoBtn');
+    const infoText = document.getElementById('info');
+
+    function formatTime(seconds) {
+      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function updateDisplay() {
+      timerEl.textContent = formatTime(remaining);
+    }
+
+    function tick() {
+      if (remaining > 0) {
+        remaining--;
+        updateDisplay();
+        localStorage.setItem('remaining', remaining);
+      } else {
+        clearInterval(interval);
+        isRunning = false;
+        toggleBtn.textContent = 'Iniciar';
+      }
+    }
+
+    toggleBtn.onclick = () => {
+      if (isRunning) {
+        clearInterval(interval);
+        toggleBtn.textContent = 'Iniciar';
+      } else {
+        if (remaining > 0) {
+          interval = setInterval(tick, 1000);
+          toggleBtn.textContent = 'Pausar';
+        }
+      }
+      isRunning = !isRunning;
+    };
+
+    resetBtn.onclick = () => {
+      clearInterval(interval);
+      isRunning = false;
+      toggleBtn.textContent = 'Iniciar';
+      remaining = 0;
+      updateDisplay();
+      localStorage.setItem('remaining', remaining);
+    };
+
+    add1mBtn.onclick = () => {
+      remaining += 60;
+      updateDisplay();
+      localStorage.setItem('remaining', remaining);
+    };
+
+    add10mBtn.onclick = () => {
+      remaining += 600;
+      updateDisplay();
+      localStorage.setItem('remaining', remaining);
+    };
+
+    sub1mBtn.onclick = () => {
+      remaining = Math.max(0, remaining - 60);
+      updateDisplay();
+      localStorage.setItem('remaining', remaining);
+    };
+
+    sub10mBtn.onclick = () => {
+      remaining = Math.max(0, remaining - 600);
+      updateDisplay();
+      localStorage.setItem('remaining', remaining);
+    };
+
+    setTimeBtn.onclick = () => {
+      const parts = setTimeInput.value.trim().split(':').map(Number);
+      if (parts.length === 3 && parts.every(n => !isNaN(n))) {
+        const [h, m, s] = parts;
+        duration = h * 3600 + m * 60 + s;
+        remaining = duration;
+        updateDisplay();
+        localStorage.setItem('remaining', remaining);
+        localStorage.setItem('duration', duration);
+      }
+    };
+
+    infoBtn.onclick = () => {
+      infoText.style.display = infoText.style.display === 'none' ? 'block' : 'none';
+    };
+
+    // Recuperar estado previo si existe
+    window.onload = () => {
+      const savedDuration = parseInt(localStorage.getItem('duration'));
+      const savedRemaining = parseInt(localStorage.getItem('remaining'));
+      if (!isNaN(savedDuration)) duration = savedDuration;
+      if (!isNaN(savedRemaining)) remaining = savedRemaining;
+      updateDisplay();
+    };
+  </script>
+</body>
+</html>
+
