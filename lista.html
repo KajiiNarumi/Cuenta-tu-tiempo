@@ -22,8 +22,6 @@ margin:auto;
 padding:30px 20px;
 }
 
-/* selector modo */
-
 .mode{
 text-align:center;
 margin-bottom:35px;
@@ -45,8 +43,6 @@ opacity:1;
 font-weight:bold;
 }
 
-/* tabla */
-
 table{
 width:100%;
 border-collapse:collapse;
@@ -64,7 +60,7 @@ font-size:1.1em;
 }
 
 .time{
-width:130px;
+width:140px;
 text-align:center;
 font-size:1.3em;
 }
@@ -73,22 +69,36 @@ font-size:1.3em;
 text-align:right;
 }
 
-/* botones */
+/* botones icono */
 
 button{
 background:none;
 border:1px solid #1296BF;
 color:#1296BF;
-padding:6px 10px;
 cursor:pointer;
-font-family:monospace;
 margin:3px;
-min-width:60px;
+width:38px;
+height:32px;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+padding:0;
+}
+
+button svg{
+width:16px;
+height:16px;
+stroke:#1296BF;
+fill:none;
+stroke-width:2;
 }
 
 button:hover{
 background:#1296BF;
-color:#000;
+}
+
+button:hover svg{
+stroke:#000;
 }
 
 /* estados */
@@ -101,7 +111,7 @@ color:#ff4040;
 color:#ffd000;
 }
 
-/* agregar item */
+/* agregar */
 
 .add{
 margin-top:30px;
@@ -237,6 +247,12 @@ item.start=Date.now()
 
 }
 
+function icon(svg){
+let b=document.createElement("button")
+b.innerHTML=svg
+return b
+}
+
 function render(){
 
 let table=document.getElementById("table")
@@ -262,57 +278,63 @@ time.textContent=formatTime(remaining)
 let controls=document.createElement("td")
 controls.className="controls"
 
-function btn(label,sec){
-
-let b=document.createElement("button")
-b.textContent=label
-b.onclick=()=>{
-adjustTime(item,sec,remaining)
-save()
-render()
-}
-return b
+let minus10=icon(`<svg viewBox="0 0 24 24"><path d="M4 12h10"/></svg>`)
+minus10.onclick=()=>{
+adjustTime(item,-600,remaining)
+save();render()
 }
 
-let play=document.createElement("button")
-play.textContent=item.running?"Pause":"Play"
+let minus1=icon(`<svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg>`)
+minus1.onclick=()=>{
+adjustTime(item,-60,remaining)
+save();render()
+}
+
+let plus1=icon(`<svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`)
+plus1.onclick=()=>{
+adjustTime(item,60,remaining)
+save();render()
+}
+
+let plus10=icon(`<svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/><circle cx="19" cy="12" r="2"/></svg>`)
+plus10.onclick=()=>{
+adjustTime(item,600,remaining)
+save();render()
+}
+
+let play=icon(item.running ?
+`<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6z"/><path d="M14 5h4v14h-4z"/></svg>`
+:
+`<svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></svg>`
+)
 
 play.onclick=()=>{
 
 if(item.running){
-
 item.running=false
 item.remaining=remaining
-
 }else{
-
 item.running=true
 item.start=Date.now()-(item.duration-remaining)*1000
+}
+
+save();render()
 
 }
 
-save()
-render()
-
-}
-
-let del=document.createElement("button")
-del.textContent="Del"
+let del=icon(`<svg viewBox="0 0 24 24">
+<path d="M4 7h16"/>
+<path d="M9 7v12"/>
+<path d="M15 7v12"/>
+<path d="M6 7l1-3h10l1 3"/>
+</svg>`)
 
 del.onclick=()=>{
 items.splice(i,1)
-save()
-render()
+save();render()
 }
 
-controls.append(
-btn("-10",-600),
-btn("-1",-60),
-btn("+1",60),
-btn("+10",600),
-play,
-del
-)
+controls.append(minus10,minus1,plus1,plus10,play,del)
 
 row.append(name,time,controls)
 
@@ -346,14 +368,6 @@ save()
 render()
 
 }
-
-document.getElementById("newName").addEventListener("keydown",e=>{
-if(e.key==="Enter") addItem()
-})
-
-document.getElementById("newTime").addEventListener("keydown",e=>{
-if(e.key==="Enter") addItem()
-})
 
 setInterval(render,1000)
 
