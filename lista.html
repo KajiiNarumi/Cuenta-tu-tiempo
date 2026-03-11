@@ -9,22 +9,25 @@
 html,body{
 margin:0;
 padding:0;
-height:100%;
 background:#000;
 color:#1296BF;
 font-family:monospace;
+font-size:18px;
+overflow-x:hidden;
 }
 
 .container{
-max-width:900px;
+max-width:1100px;
 margin:auto;
-padding:20px;
+padding:30px 20px;
 }
+
+/* selector modo */
 
 .mode{
 text-align:center;
-margin-bottom:10px;
-font-size:18px;
+margin-bottom:35px;
+font-size:26px;
 }
 
 .mode a{
@@ -42,42 +45,53 @@ opacity:1;
 font-weight:bold;
 }
 
-h1{
-text-align:center;
-font-weight:normal;
-margin-bottom:30px;
-}
+/* tabla */
 
 table{
 width:100%;
 border-collapse:collapse;
-table-layout:fixed;
 }
 
 td{
-padding:8px;
+padding:12px 8px;
 border-bottom:1px solid #1296BF33;
+vertical-align:middle;
 }
 
-.name{ width:50%; }
-.time{ width:120px; text-align:center; }
-.controls{ width:420px; text-align:right; }
+.name{
+width:40%;
+font-size:1.1em;
+}
+
+.time{
+width:130px;
+text-align:center;
+font-size:1.3em;
+}
+
+.controls{
+text-align:right;
+}
+
+/* botones */
 
 button{
 background:none;
 border:1px solid #1296BF;
 color:#1296BF;
-padding:5px 10px;
+padding:6px 10px;
 cursor:pointer;
 font-family:monospace;
-margin-left:4px;
-width:60px;
+margin:3px;
+min-width:60px;
 }
 
 button:hover{
 background:#1296BF;
 color:#000;
 }
+
+/* estados */
 
 .finished{
 color:#ff4040;
@@ -87,9 +101,12 @@ color:#ff4040;
 color:#ffd000;
 }
 
+/* agregar item */
+
 .add{
-margin-top:20px;
+margin-top:30px;
 display:flex;
+flex-wrap:wrap;
 gap:10px;
 }
 
@@ -97,12 +114,48 @@ input{
 background:none;
 border:1px solid #1296BF;
 color:#1296BF;
-padding:4px;
+padding:8px;
 font-family:monospace;
-width:100%;
+flex:1;
+min-width:120px;
 }
 
-.add input{ flex:1; }
+/* móvil */
+
+@media (max-width:700px){
+
+.container{
+padding:20px 12px;
+}
+
+.mode{
+font-size:22px;
+}
+
+td{
+display:block;
+width:100%;
+border:none;
+padding:6px 0;
+}
+
+tr{
+display:block;
+border-bottom:1px solid #1296BF33;
+padding-bottom:10px;
+margin-bottom:10px;
+}
+
+.controls{
+text-align:left;
+}
+
+.time{
+font-size:1.2em;
+margin-bottom:4px;
+}
+
+}
 
 </style>
 </head>
@@ -116,7 +169,6 @@ width:100%;
 <span> / </span>
 <span class="active">LISTA</span>
 </div>
-
 
 <table id="table"></table>
 
