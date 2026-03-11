@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Lista</title>
+
+<style>
+
+html,body{
+margin:0;
+padding:0;
+height:100%;
+background:#000;
+color:#1296BF;
+font-family:monospace;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+
+.mode{
+text-align:center;
+margin-bottom:10px;
+font-size:18px;
+}
+
+.mode a{
+text-decoration:none;
+color:#1296BF;
+opacity:.35;
+}
+
+.mode span{
+opacity:.35;
+}
+
+.mode .active{
+opacity:1;
+font-weight:bold;
+}
+
+h1{
+text-align:center;
+font-weight:normal;
+margin-bottom:30px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+table-layout:fixed;
+}
+
+td{
+padding:8px;
+border-bottom:1px solid #1296BF33;
+}
+
+.name{ width:50%; }
+.time{ width:120px; text-align:center; }
+.controls{ width:420px; text-align:right; }
+
+button{
+background:none;
+border:1px solid #1296BF;
+color:#1296BF;
+padding:5px 10px;
+cursor:pointer;
+font-family:monospace;
+margin-left:4px;
+width:60px;
+}
+
+button:hover{
+background:#1296BF;
+color:#000;
+}
+
+.finished{
+color:#ff4040;
+}
+
+.warning{
+color:#ffd000;
+}
+
+.add{
+margin-top:20px;
+display:flex;
+gap:10px;
+}
+
+input{
+background:none;
+border:1px solid #1296BF;
+color:#1296BF;
+padding:4px;
+font-family:monospace;
+width:100%;
+}
+
+.add input{ flex:1; }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="mode">
+<a href="https://kajiinarumi.github.io/Cuenta-tu-tiempo/">Simple</a>
+<span> / </span>
+<span class="active">LISTA</span>
+</div>
+
+<h1>Lista</h1>
+
+<table id="table"></table>
+
+<div class="add">
+<input id="newName" placeholder="item">
+<input id="newTime" placeholder="HHMM">
+<button onclick="addItem()">Add</button>
+</div>
+
+</div>
+
+<script>
+
+let items=JSON.parse(localStorage.getItem("cookTimers")||"[]")
+
+function save(){
+localStorage.setItem("cookTimers",JSON.stringify(items))
+}
+
+function parseTime(raw){
+
+raw=raw.replace(/\D/g,"")
+
+let min=raw.slice(-2)
+let hr=raw.slice(0,-2)
+
+return (parseInt(hr||0)*3600)+(parseInt(min||0)*60)
+}
+
+function formatTime(sec){
+
+let h=Math.floor(sec/3600)
+let m=Math.floor((sec%3600)/60)
+let s=sec%60
+
+return String(h).padStart(2,"0")+":"+
+       String(m).padStart(2,"0")+":"+
+       String(s).padStart(2,"0")
+}
+
+function computeRemaining(item){
+
+if(!item.running) return item.remaining
+
+let elapsed=Math.floor((Date.now()-item.start)/1000)
+let left=item.duration-elapsed
+
+if(left<=0){
+item.running=false
+item.remaining=0
+return 0
+}
+
+item.remaining=left
+return left
+}
+
+function adjustTime(item,seconds,remaining){
+
+item.remaining=Math.max(0,remaining+seconds)
+item.duration=item.remaining
+
+if(item.running){
+item.start=Date.now()
+}
+
+}
+
+function render(){
+
+let table=document.getElementById("table")
+table.innerHTML=""
+
+items.forEach((item,i)=>{
+
+let remaining=computeRemaining(item)
+
+let row=document.createElement("tr")
+
+if(remaining===0) row.classList.add("finished")
+else if(remaining<=item.duration*0.2) row.classList.add("warning")
+
+let name=document.createElement("td")
+name.className="name"
+name.textContent=item.name
+
+let time=document.createElement("td")
+time.className="time"
+time.textContent=formatTime(remaining)
+
+let controls=document.createElement("td")
+controls.className="controls"
+
+function btn(label,sec){
+
+let b=document.createElement("button")
+b.textContent=label
+b.onclick=()=>{
+adjustTime(item,sec,remaining)
+save()
+render()
+}
+return b
+}
+
+let play=document.createElement("button")
+play.textContent=item.running?"Pause":"Play"
+
+play.onclick=()=>{
+
+if(item.running){
+
+item.running=false
+item.remaining=remaining
+
+}else{
+
+item.running=true
+item.start=Date.now()-(item.duration-remaining)*1000
+
+}
+
+save()
+render()
+
+}
+
+let del=document.createElement("button")
+del.textContent="Del"
+
+del.onclick=()=>{
+items.splice(i,1)
+save()
+render()
+}
+
+controls.append(
+btn("-10",-600),
+btn("-1",-60),
+btn("+1",60),
+btn("+10",600),
+play,
+del
+)
+
+row.append(name,time,controls)
+
+table.appendChild(row)
+
+})
+
+}
+
+function addItem(){
+
+let name=document.getElementById("newName").value.trim()
+let time=document.getElementById("newTime").value.trim()
+
+if(!name||!time) return
+
+let duration=parseTime(time)
+
+items.push({
+name:name,
+duration:duration,
+remaining:duration,
+running:false,
+start:0
+})
+
+document.getElementById("newName").value=""
+document.getElementById("newTime").value=""
+
+save()
+render()
+
+}
+
+document.getElementById("newName").addEventListener("keydown",e=>{
+if(e.key==="Enter") addItem()
+})
+
+document.getElementById("newTime").addEventListener("keydown",e=>{
+if(e.key==="Enter") addItem()
+})
+
+setInterval(render,1000)
+
+render()
+
+</script>
+
+</body>
+</html>
